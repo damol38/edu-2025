@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안산중앙초 특별실 관리</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .floor-header {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            margin: 20px 0 10px 0;
+            border-radius: 10px;
+        }
+
+        .floor-header h2 {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .room-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .room-card .info {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 1000px;
+            margin: 50px auto;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .item-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .item-quantity {
+            color: #667eea;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .add-item-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .timetable table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .timetable th,
+        .timetable td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .timetable td:first-child {
+            min-width: 100px;
+            font-weight: bold;
+        }
+
+        .timetable th {
+            background: #667eea;
+            color: white;
+        }
+
+        .timetable input {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .reset-btn {
+            background: #dc3545;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .reset-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        .notice {
+            color: white;
+            background: rgba(220, 53, 69, 0.8);
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.95em;
+            font-weight: bold;
+        }
+
+        .search-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .search-container h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1.1em;
+        }
+
+        .search-box button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5568d3;
+        }
+
+        .search-results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .search-results.show {
+            display: block;
+        }
+
+        .search-result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .search-result-item .room-name {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .search-result-item .item-info {
+            color: #333;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+            font-size: 1.1em;
+        }
+
+        .time-label {
+            font-size: 0.85em;
+            color: #666;
+            font-weight: normal;
+        }
+
+        .calendar-btn {
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .calendar-btn:hover {
+            background: #218838;
+        }
+
+        .calendar-container {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header h3 {
+            color: #667eea;
+            font-size: 1.5em;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .calendar-nav button {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .calendar-nav button:hover {
+            background: #5568d3;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .calendar-day:hover {
+            background: #f0f0ff;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.today {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+        }
+
+        .calendar-day.selected {
+            background: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+
+        .daily-schedule {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .daily-schedule h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .schedule-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .schedule-period {
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .schedule-period-header {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .schedule-room {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+
+        .schedule-room-name {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .schedule-room-class {
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .full-schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .full-schedule-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid #5568d3;
+            font-size: 0.95em;
+        }
+
+        .full-schedule-table th.time-header {
+            background: #764ba2;
+            min-width: 100px;
+        }
+
+        .full-schedule-table td {
+            border: 1px solid #ddd;
+            padding: 10px 8px;
+            text-align: center;
+            vertical-align: middle;
+            min-height: 50px;
+        }
+
+        .full-schedule-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .full-schedule-table .time-cell {
+            background: #f0f0ff;
+            font-weight: bold;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        .full-schedule-table .class-info {
+            background: #e7f3ff;
+            color: #333;
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 45px;
+        }
+
+        .full-schedule-table .empty-cell {
+            color: #ccc;
+            font-style: italic;
+        }
+
+        #dailySchedule {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        /* 모바일 반응형 디자인 */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            .container {
+                padding: 0;
+            }
+
+            .search-box {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .search-box input {
+                width: 100%;
+                font-size: 16px; /* iOS 줌 방지 */
+            }
+
+            .search-box button {
+                width: 100%;
+                padding: 12px;
+                font-size: 1em;
+            }
+
+            .calendar-btn {
+                width: 100%;
+                margin-left: 0;
+                padding: 12px 20px;
+            }
+
+            .rooms-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .room-card {
+                padding: 15px;
+            }
+
+            .room-card h3 {
+                font-size: 1.1em;
+            }
+
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1;
+                min-width: 100px;
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+
+            .items-grid {
+                grid-template-columns: 1fr;
+                max-height: 400px;
+            }
+
+            .calendar-grid {
+                gap: 3px;
+            }
+
+            .calendar-day {
+                font-size: 0.9em;
+                padding: 8px 4px;
+            }
+
+            .calendar-day-header {
+                font-size: 0.9em;
+                padding: 8px 4px;
+            }
+
+            .full-schedule-table {
+                font-size: 0.85em;
+            }
+
+            .full-schedule-table th,
+            .full-schedule-table td {
+                padding: 8px 4px;
+                min-width: 60px;
+            }
+
+            .full-schedule-table th.time-header {
+                min-width: 80px;
+            }
+
+            .class-info {
+                font-size: 0.85em;
+                padding: 4px 6px;
+            }
+
+            .timetable table {
+                font-size: 0.85em;
+            }
+
+            .timetable th,
+            .timetable td {
+                padding: 8px 4px;
+            }
+
+            .timetable input {
+                font-size: 0.85em;
+                padding: 6px;
+            }
+
+            .form-group input {
+                font-size: 16px; /* iOS 줌 방지 */
+            }
+
+            .add-item-form {
+                padding: 15px;
+            }
+
+            .search-result-item {
+                padding: 12px;
+            }
+
+            .floor-header {
+                padding: 12px;
+                margin: 15px 0 10px 0;
+            }
+
+            .floor-header h2 {
+                font-size: 1.2em;
+            }
+
+            #pasteArea {
+                font-size: 0.85em;
+                height: 100px;
+            }
+
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* 작은 모바일 (360px 이하) */
+        @media screen and (max-width: 360px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .full-schedule-table {
+                font-size: 0.75em;
+            }
+
+            .full-schedule-table th,
+            .full-schedule-table td {
+                padding: 6px 2px;
+                min-width: 50px;
+            }
+
+            .calendar-day {
+                font-size: 0.8em;
+                padding: 6px 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏫 안산중앙초 특별실 관리</h1>
+        
+        <!-- 물품 검색 -->
+        <div class="search-container">
+            <h2>🔍 물품 검색</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="물품 이름을 입력하세요 (예: 소고, 축구공, 컴퓨터 등)" onkeypress="if(event.key==='Enter') searchItems()">
+                <button onclick="searchItems()">검색</button>
+                <button class="calendar-btn" onclick="toggleDataEntry()" style="background: #28a745;">📝 자료입력</button>
+            </div>
+            <div id="searchResults" class="search-results"></div>
+            
+            <!-- 달력 (항상 표시) -->
+            <div id="calendarView" style="display: block;">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <h3 id="calendarMonth">2025년 10월</h3>
+                        <div class="calendar-nav">
+                            <button onclick="changeMonth(-1)">◀ 이전</button>
+                            <button onclick="goToday()">오늘</button>
+                            <button onclick="changeMonth(1)">다음 ▶</button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day-header">일</div>
+                        <div class="calendar-day-header">월</div>
+                        <div class="calendar-day-header">화</div>
+                        <div class="calendar-day-header">수</div>
+                        <div class="calendar-day-header">목</div>
+                        <div class="calendar-day-header">금</div>
+                        <div class="calendar-day-header">토</div>
+                    </div>
+                    <div id="calendarDays" class="calendar-grid" style="margin-top: 5px;"></div>
+                </div>
+                
+                <!-- 선택한 날짜의 시간표 -->
+                <div id="dailySchedule" class="daily-schedule" style="display: none;">
+                    <h3 id="scheduleDate"></h3>
+                    <div id="scheduleContent" class="schedule-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 자료 입력 영역 (초기 숨김) -->
+        <div id="roomsContainer" style="display: none;">
+        <!-- 본관 2층 -->
+        <div class="floor-header">
+            <h2>📍 본관 2층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('1,2학년 연구실', false)">
+                <h3>1,2학년 연구실</h3>
+                <p class="info">물품 4종</p>
+            </div>
+            <div class="room-card" onclick="openRoom('1학년 자료실', false)">
+                <h3>1학년 자료실</h3>
+                <p class="info">물품 3종</p>
+            </div>
+            <div class="room-card" onclick="openRoom('2학년 자료실', false)">
+                <h3>2학년 자료실</h3>
+                <p class="info">물품 3종</p>
+            </div>
+            <div class="room-card" onclick="openRoom('방과후교실1', true)">
+                <h3>방과후교실1</h3>
+                <p class="info">방과후: 로봇과학, 한국사, 과학, 클레이</p>
+            </div>
+        </div>
+
+        <!-- 본관 3층 -->
+        <div class="floor-header">
+            <h2>📍 본관 3층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('3,6학년 연구실', false)">
+                <h3>3,6학년 연구실</h3>
+                <p class="info">물품 2종</p>
+            </div>
+            <div class="room-card" onclick="openRoom('4,5학년 자료실', false)">
+                <h3>4,5학년 자료실</h3>
+                <p class="info">물품 관리</p>
+            </div>
+            <div class="room-card" onclick="openRoom('3,5학년 영어실', true)">
+                <h3>3,5학년 영어실</h3>
+                <p class="info">물품 + 시간표</p>
+            </div>
+            <div class="room-card" onclick="openRoom('4,6학년 영어실', true)">
+                <h3>4,6학년 영어실</h3>
+                <p class="info">물품 + 시간표</p>
+            </div>
+        </div>
+
+        <!-- 본관 4층 -->
+        <div class="floor-header">
+            <h2>📍 본관 4층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('3학년 자료실', false)">
+                <h3>3학년 자료실</h3>
+                <p class="info">물품 3종</p>
+            </div>
+            <div class="room-card" onclick="openRoom('4,5학년 연구실', false)">
+                <h3>4,5학년 연구실</h3>
+                <p class="info">물품 관리</p>
+            </div>
+            <div class="room-card" onclick="openRoom('6학년 자료실', false)">
+                <h3>6학년 자료실</h3>
+                <p class="info">물품 관리</p>
+            </div>
+            <div class="room-card" onclick="openRoom('6학년연구실-도전', false)">
+                <h3>6학년연구실-도전</h3>
+                <p class="info">스택스 물품 7종</p>
+            </div>
+        </div>
+
+        <!-- 별관 1층 -->
+        <div class="floor-header">
+            <h2>📍 별관 1층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('도서실', true)">
+                <h3>📚 도서실</h3>
+                <p class="info">시간표</p>
+            </div>
+        </div>
+
+        <!-- 별관 2층 -->
+        <div class="floor-header">
+            <h2>📍 별관 2층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('물품보관실', false)">
+                <h3>물품보관실</h3>
+                <p class="info">물품 관리</p>
+            </div>
+            <div class="room-card" onclick="openRoom('늘봄교실2', true)">
+                <h3>늘봄교실2</h3>
+                <p class="info">2반 늘봄 프로그램 + 시간표</p>
+            </div>
+            <div class="room-card" onclick="openRoom('늘봄교실1', true)">
+                <h3>늘봄교실1</h3>
+                <p class="info">1,3반 늘봄 프로그램 + 시간표</p>
+            </div>
+        </div>
+
+        <!-- 별관 3층 -->
+        <div class="floor-header">
+            <h2>📍 별관 3층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('방과후교실2', true)">
+                <h3>음악실 / 방과후교실2</h3>
+                <p class="info">악기 16종 | 방과후: 바이올린, 바둑</p>
+            </div>
+            <div class="room-card" onclick="openRoom('AI실', true)">
+                <h3>AI실</h3>
+                <p class="info">물품 38종 + 시간표</p>
+            </div>
+            <div class="room-card" onclick="openRoom('VR체험실', true)">
+                <h3>VR체험실</h3>
+                <p class="info">물품 16종 + 늘봄/방과후</p>
+            </div>
+        </div>
+
+        <!-- 별관 4층 -->
+        <div class="floor-header">
+            <h2>📍 별관 4층</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('컴퓨터실', true)">
+                <h3>컴퓨터실</h3>
+                <p class="info">시간표 | 방과후: 코딩, 컴퓨터</p>
+            </div>
+            <div class="room-card" onclick="openRoom('소체육실', true)">
+                <h3>🤸 소체육실</h3>
+                <p class="info">물품 | 방과후: 방송댄스</p>
+            </div>
+            <div class="room-card" onclick="openRoom('두드림실', false)">
+                <h3>두드림실</h3>
+                <p class="info">물품 관리</p>
+            </div>
+        </div>
+
+        <!-- 체육 시설 -->
+        <div class="floor-header">
+            <h2>📍 체육 시설</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('체육관', true)">
+                <h3>🏀 체육관</h3>
+                <p class="info">물품 100종+ | 방과후: 음악줄넘기, 축구</p>
+            </div>
+            <div class="room-card" onclick="openRoom('구령대밑', false)">
+                <h3>구령대밑 (체육창고)</h3>
+                <p class="info">물품 30종</p>
+            </div>
+        </div>
+
+        <!-- 특별실 -->
+        <div class="floor-header">
+            <h2>📍 특별실</h2>
+        </div>
+        <div class="rooms-grid">
+            <div class="room-card" onclick="openRoom('과학실1', true)">
+                <h3>🔬 과학실1</h3>
+                <p class="info">물품 + 시간표</p>
+            </div>
+            <div class="room-card" onclick="openRoom('과학실2', true)">
+                <h3>🧪 과학실2</h3>
+                <p class="info">물품 + 시간표</p>
+            </div>
+        </div>
+        </div>
+        <!-- 자료 입력 영역 끝 -->
+    </div>
+
+    <!-- 모달 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('items')">물품 관리</button>
+                <button class="tab" id="timetableTabBtn" onclick="switchTab('timetable')" style="display:none;">시간표</button>
+            </div>
+
+            <!-- 물품 탭 -->
+            <div id="itemsTab" class="tab-content active">
+                <div class="items-grid" id="itemsList"></div>
+                
+                <div class="add-item-form">
+                    <h3>물품 추가</h3>
+                    <div class="form-group">
+                        <label>물품명</label>
+                        <input type="text" id="itemName" placeholder="물품명 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>수량</label>
+                        <input type="number" id="itemQuantity" placeholder="수량 입력" min="0">
+                    </div>
+                    <button class="btn btn-success" onclick="addItem()">추가</button>
+                </div>
+            </div>
+
+            <!-- 시간표 탭 -->
+            <div id="timetableTab" class="tab-content">
+                <div class="timetable">
+                    <div style="background: #f0f0ff; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <h4 style="color: #667eea; margin-bottom: 10px;">📋 엑셀에서 복사하여 붙여넣기</h4>
+                        <p style="color: #666; font-size: 0.9em; margin-bottom: 10px;">
+                            엑셀에서 시간표를 복사하여 아래 상자에 붙여넣으세요. (월~금, 1~8교시)
+                        </p>
+                        <textarea id="pasteArea" 
+                                  placeholder="엑셀에서 시간표를 복사하여 여기에 붙여넣으세요&#10;예시:&#10;3-1	4-2	5-3	6-1	-&#10;2-3	-	4-4	-	3-2&#10;..."
+                                  style="width: 100%; height: 120px; padding: 10px; border: 2px dashed #667eea; border-radius: 5px; font-family: monospace; font-size: 0.9em;"></textarea>
+                        <button class="btn btn-success" onclick="parsePastedData()" style="margin-top: 10px;">📥 붙여넣은 내용 반영</button>
+                        <button class="btn btn-danger" onclick="clearPasteArea()" style="margin-top: 10px; margin-left: 10px;">🗑️ 지우기</button>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>교시/시간</th>
+                                <th>월</th>
+                                <th>화</th>
+                                <th>수</th>
+                                <th>목</th>
+                                <th>금</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetableBody"></tbody>
+                    </table>
+                    <button class="btn btn-primary" onclick="saveTimetable()" style="margin-top: 20px;">💾 시간표 저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRoom = '';
+        let roomData = {};
+
+        // 기본 데이터
+        function getDefaultData() {
+            return {
+                '음악실': {
+                    items: [
+                        { name: '반주장구', quantity: 6 },
+                        { name: '반주열채', quantity: 6 },
+                        { name: '사물장구', quantity: 24 },
+                        { name: '장구채', quantity: 30 },
+                        { name: '태극소고', quantity: 25 },
+                        { name: '민소고', quantity: 25 },
+                        { name: '징', quantity: 3 },
+                        { name: '징걸이', quantity: 1 },
+                        { name: '꽹과리', quantity: 4 },
+                        { name: '북', quantity: 5 },
+                        { name: '북채', quantity: 3 },
+                        { name: '장구', quantity: 7 },
+                        { name: '작은북', quantity: 5 },
+                        { name: '심벌즈', quantity: 1 },
+                        { name: '우쿠렐레', quantity: 27 },
+                        { name: '윈드차임', quantity: 1 }
+                    ]
+                },
+                '1학년 자료실': {
+                    items: [
+                        { name: '소고', quantity: 46 },
+                        { name: '탬버린', quantity: 40 },
+                        { name: '핸드벨', quantity: 5 }
+                    ]
+                },
+                '1,2학년 연구실': {
+                    items: [
+                        { name: '소고', quantity: 25 },
+                        { name: '리듬악기 세트', quantity: 25 },
+                        { name: '귀로', quantity: 30 },
+                        { name: '우드블럭', quantity: 34 }
+                    ]
+                },
+                '2학년 자료실': {
+                    items: [
+                        { name: '실로폰', quantity: 42 },
+                        { name: '탬버린', quantity: 24 },
+                        { name: '핸드벨', quantity: 4 }
+                    ]
+                },
+                '3학년 자료실': {
+                    items: [
+                        { name: '실로폰', quantity: 31 },
+                        { name: '마라카스', quantity: 5 },
+                        { name: '탬버린 세트', quantity: 14 }
+                    ]
+                },
+                '3,6학년 연구실': {
+                    items: [
+                        { name: '소고', quantity: 24 },
+                        { name: '북', quantity: 3 }
+                    ]
+                },
+                '4,5학년 자료실': { items: [] },
+                '4,5학년 연구실': { items: [] },
+                '6학년 자료실': { items: [] },
+                '3,5학년 영어실': { 
+                    items: [], 
+                    timetable: {
+                        '월-1': '5-1', '월-2': '5-2', '월-3': '5-3', '월-4': '5-4',
+                        '화-1': '3-4', '화-2': '3-3', '화-3': '3-2', '화-4': '3-1',
+                        '수-1': '5-2', '수-2': '5-3', '수-3': '5-4', '수-4': '5-1',
+                        '목-1': '3-4', '목-2': '3-3', '목-3': '3-2', '목-4': '3-1',
+                        '금-1': '5-3', '금-2': '5-4', '금-3': '5-1', '금-4': '5-2'
+                    } 
+                },
+                '4,6학년 영어실': { 
+                    items: [], 
+                    timetable: {
+                        '월-1': '4-2', '월-2': '6-1', '월-3': '6-2', '월-4': '6-3',
+                        '화-1': '6-1', '화-2': '4-3', '화-3': '4-4', '화-4': '4-1',
+                        '수-1': '4-3', '수-2': '6-2', '수-3': '6-3',
+                        '목-1': '6-1', '목-2': '4-4', '목-3': '4-1', '목-4': '4-2',
+                        '금-1': '6-2', '금-2': '6-3'
+                    } 
+                },
+                '방과후교실1': { 
+                    items: [], 
+                    timetable: {
+                        '월-6': '로봇과학(저)', '월-7': '로봇과학(고)',
+                        '수-5': '한국사(저)', '수-6': '한국사(고)',
+                        '목-6': '창의과학(저)', '목-7': '창의과학(고)',
+                        '금-6': '클레이(저)', '금-7': '클레이(고)'
+                    }
+                },
+                'AI실': {
+                    items: [
+                        { name: '알쥐봇+모니터', quantity: 26 },
+                        { name: '노란공', quantity: 28 },
+                        { name: '비봇', quantity: 6 },
+                        { name: '비봇 펜홀더', quantity: 12 },
+                        { name: '비봇 도킹스테이션', quantity: 1 },
+                        { name: '레고 스파이크 프라임', quantity: 15 },
+                        { name: '카미봇', quantity: 15 },
+                        { name: '카미봇 맵보드세트', quantity: 8 },
+                        { name: '카미봇 활동카드', quantity: 14 },
+                        { name: '햄스터봇', quantity: 35 },
+                        { name: '햄스터봇 동글', quantity: 31 },
+                        { name: '햄스터용 AI카메라', quantity: 27 },
+                        { name: '햄스터용 실과키트', quantity: 28 },
+                        { name: '햄스터용 그리퍼', quantity: 28 },
+                        { name: '햄스터 미로찾기용 커버', quantity: 28 },
+                        { name: '햄스터 미로판', quantity: 27 },
+                        { name: '인공지능 로봇경기장 키트', quantity: 7 },
+                        { name: '뚜루뚜루', quantity: 33 },
+                        { name: '컬러코딩카드', quantity: 38 },
+                        { name: '마이크로비트 풀키트', quantity: 8 },
+                        { name: '마이크로비트 케이블', quantity: 23 },
+                        { name: '마이크로비트 보드', quantity: 30 },
+                        { name: 'e-센서보드', quantity: 29 },
+                        { name: 'VR 기본형 카드보드', quantity: 33 },
+                        { name: 'AI 보드 키트', quantity: 18 },
+                        { name: '크롬북', quantity: 30 },
+                        { name: '충전함(크롬북)', quantity: 1 },
+                        { name: '태블릿', quantity: 30 },
+                        { name: '충전함(태블릿)', quantity: 1 },
+                        { name: '와이파이 연결장치', quantity: 29 },
+                        { name: '5핀 데이터 케이블', quantity: 10 },
+                        { name: '충전기(8구)', quantity: 7 },
+                        { name: '유선마우스', quantity: 22 },
+                        { name: '아발론 클래식', quantity: 8 },
+                        { name: '초코비', quantity: 6 },
+                        { name: '스택버거', quantity: 22 },
+                        { name: 'AI로보팩토리', quantity: 4 },
+                        { name: '엔트리봇 코딩게임', quantity: 14 }
+                    ],
+                    timetable: {},
+                    weeklySchedule: {
+                        '2025-08-25': { 화: ['4-1', '4-1', '4-2', '4-2', '4-3', '4-3'], 수: ['5-3', '5-3', '5-1', '5-1'] },
+                        '2025-09-01': { 월: ['1-1', '1-1', '1-2', '1-2'], 화: ['4-1', '4-1', '4-2', '4-2', '4-', '4-3'], 수: ['5-3', '5-3', '5-1', '5-1'] },
+                        '2025-09-08': { 월: ['1-1', '1-1', '1-2', '1-2'], 화: ['4-5', '4-5', '4-4', '4-4', '3-2', '3-2'], 수: ['5-3', '5-3', '5-1', '5-1'] },
+                        '2025-09-15': { 월: ['1-3', '1-3', '1-4', '1-4'], 화: ['4-5', '4-5', '4-4', '4-4', '3-2', '3-2'], 수: ['5-4', '5-4', '5-2', '5-2'] },
+                        '2025-09-22': { 월: ['1-3', '1-3', '1-4', '1-4'], 수: ['5-4', '5-4', '5-2', '5-2'] },
+                        '2025-09-29': { 수: ['5-4', '5-4', '5-2', '5-2'], 목: ['6-3', '6-3', '6-2', '6-2'] },
+                        '2025-10-13': { 월: ['6-2', '6-2', '6-3', '6-3'], 화: ['3-3', '3-3', '3-1', '3-1', '3-4', '3-4'] },
+                        '2025-10-20': { 월: ['6-3', '6-3', '6-2', '6-2'], 화: ['3-3', '3-3', '3-1', '3-1', '3-4', '3-4'] },
+                        '2025-10-27': { 월: ['6-1', '6-1', '6-4', '6-4'], 화: ['3-3', '3-3', '3-1', '3-1', '3-4', '3-4'] },
+                        '2025-11-03': { 월: ['6-1', '6-1', '6-4', '6-4'] },
+                        '2025-11-10': { 월: ['6-1', '6-1', '6-4', '6-4'] }
+                    }
+                },
+                '방과후교실2': { 
+                    items: [
+                        { name: '반주장구', quantity: 6 },
+                        { name: '반주열채', quantity: 6 },
+                        { name: '사물장구', quantity: 24 },
+                        { name: '장구채', quantity: 30 },
+                        { name: '태극소고', quantity: 25 },
+                        { name: '민소고', quantity: 25 },
+                        { name: '징', quantity: 3 },
+                        { name: '징걸이', quantity: 1 },
+                        { name: '꽹과리', quantity: 4 },
+                        { name: '북', quantity: 5 },
+                        { name: '북채', quantity: 3 },
+                        { name: '장구', quantity: 7 },
+                        { name: '작은북', quantity: 5 },
+                        { name: '심벌즈', quantity: 1 },
+                        { name: '우쿠렐레', quantity: 27 },
+                        { name: '윈드차임', quantity: 1 }
+                    ], 
+                    timetable: {
+                        '수-5': '바이올린(저)', '수-6': '바이올린(고)',
+                        '금-6': '바둑(저)', '금-7': '바둑(고)'
+                    }
+                },
+                'VR체험실': {
+                    items: [
+                        { name: '플로어볼', quantity: 30 },
+                        { name: '접시콘', quantity: 10 },
+                        { name: '돗지비 디스크', quantity: 1 },
+                        { name: '까롬 경기데스크', quantity: 2 },
+                        { name: '까롬 경기판', quantity: 3 },
+                        { name: '까롬 스트라이커', quantity: 5 },
+                        { name: '플로어컬링', quantity: 3 },
+                        { name: '요가매트', quantity: 18 },
+                        { name: 'VR 안전블럭', quantity: 6 },
+                        { name: '미니골대', quantity: 2 },
+                        { name: '미니 축구공', quantity: 10 },
+                        { name: '축구공', quantity: 10 },
+                        { name: '볼링공', quantity: 6 },
+                        { name: '원형 부메랑', quantity: 20 },
+                        { name: '양궁 활', quantity: 4 },
+                        { name: '양궁 화살촉', quantity: 20 }
+                    ],
+                    timetable: {
+                        '월-1': '5-3', '월-2': '5-4', '월-3': '5-1', '월-4': '5-2', '월-5': '1-5',
+                        '화-1': '1-1', '화-2': '1-2', '화-3': '1-3', '화-4': '1-4',
+                        '수-1': '4-1', '수-2': '4-4', '수-3': '4-3', '수-4': '4-1',
+                        '목-1': '3-3', '목-2': '3-4', '목-3': '3-1', '목-4': '3-2',
+                        '금-1': '2-1', '금-2': '2-2', '금-3': '2-3', '금-4': '2-4'
+                    }
+                },
+                '체육관': {
+                    items: [
+                        { name: '악력측정기', quantity: 4 },
+                        { name: '좌전굴', quantity: 3 },
+                        { name: '투호 통', quantity: 6 },
+                        { name: '투호 화살', quantity: 20 },
+                        { name: '뒤집기 판', quantity: 34 },
+                        { name: '콩 주머니', quantity: 15 },
+                        { name: '4m 구슬줄', quantity: 10 },
+                        { name: '6m PVC줄', quantity: 2 },
+                        { name: '줄넘기(면)', quantity: 9 },
+                        { name: '라바콘 30cm', quantity: 2 },
+                        { name: '라바콘 20cm', quantity: 8 },
+                        { name: '접시콘', quantity: 24 },
+                        { name: '30cm 콘', quantity: 2 },
+                        { name: '대형콘', quantity: 6 },
+                        { name: '콘커버', quantity: 2 },
+                        { name: '원형마커(L)', quantity: 20 },
+                        { name: '원형마커(S)', quantity: 10 },
+                        { name: '안전바', quantity: 6 },
+                        { name: '폼막대', quantity: 20 },
+                        { name: '라인테이프', quantity: 5 },
+                        { name: '50M 줄자', quantity: 2 },
+                        { name: '크로스홉', quantity: 1 },
+                        { name: '스텝사다리', quantity: 1 },
+                        { name: '1kg아령', quantity: 2 },
+                        { name: '4단 안전뜀틀', quantity: 2 },
+                        { name: '높이뛰기 지주대', quantity: 2 },
+                        { name: '높이뛰기 바', quantity: 1 },
+                        { name: '높이뛰기매트', quantity: 2 },
+                        { name: '체조매트', quantity: 8 },
+                        { name: '발구름판', quantity: 1 },
+                        { name: '육상화', quantity: 24 },
+                        { name: '육상복(상의)', quantity: 13 },
+                        { name: '육상복(하의)', quantity: 15 },
+                        { name: '배턴', quantity: 14 },
+                        { name: '미니허들', quantity: 10 },
+                        { name: '씨름 샅바', quantity: 30 },
+                        { name: '포환(3종)', quantity: 7 },
+                        { name: '디스크윷놀이', quantity: 1 },
+                        { name: '메디신볼1kg', quantity: 1 },
+                        { name: '볼로볼', quantity: 2 },
+                        { name: '빅민턴 라켓', quantity: 20 },
+                        { name: '빅민턴 셔틀콕', quantity: 7 },
+                        { name: '배드민턴라켓', quantity: 50 },
+                        { name: '배드민턴 셔틀콕', quantity: 50 },
+                        { name: '배드민턴 네트', quantity: 3 },
+                        { name: '배드민턴 지주대', quantity: 4 },
+                        { name: '패드민턴', quantity: 20 },
+                        { name: '플로어볼', quantity: 15 },
+                        { name: '넷볼골대', quantity: 2 },
+                        { name: '넷볼공', quantity: 2 },
+                        { name: '넷볼 팀조끼', quantity: 4 },
+                        { name: '농구공(나이키)', quantity: 20 },
+                        { name: '농구공(윌슨)', quantity: 8 },
+                        { name: '농구공(몰텐)', quantity: 2 },
+                        { name: '피구공(2021)3호', quantity: 7 },
+                        { name: '피구공(2021)4호', quantity: 3 },
+                        { name: '피구공(2022)3호', quantity: 14 },
+                        { name: '피구심판깃발', quantity: 24 },
+                        { name: '무릎 보호대', quantity: 25 },
+                        { name: '피구고글', quantity: 3 },
+                        { name: '발리볼', quantity: 4 },
+                        { name: '소프트폼볼', quantity: 2 },
+                        { name: '축구공', quantity: 45 },
+                        { name: '야구 연식공', quantity: 10 },
+                        { name: '티볼공', quantity: 15 },
+                        { name: '티볼 배팅티', quantity: 10 },
+                        { name: '티볼 배트', quantity: 9 },
+                        { name: '캐치볼', quantity: 20 },
+                        { name: '캐치볼 공', quantity: 10 },
+                        { name: '펀볼 60cm 외피', quantity: 5 },
+                        { name: '펀볼 60cm 내피', quantity: 3 },
+                        { name: '펀볼 120cm 외피', quantity: 1 },
+                        { name: '추크볼', quantity: 2 },
+                        { name: '추크볼골대', quantity: 2 },
+                        { name: '팀조끼(노랑)', quantity: 24 },
+                        { name: '팀조끼(주황)', quantity: 12 },
+                        { name: '팀조끼(보라)', quantity: 15 },
+                        { name: '팀조끼(파랑)', quantity: 34 },
+                        { name: '팀조끼(빨강)', quantity: 32 },
+                        { name: '팀조끼(그린)', quantity: 15 },
+                        { name: '팀조끼(블랙)', quantity: 15 },
+                        { name: '팀조끼(흰색)', quantity: 18 },
+                        { name: '만능조끼', quantity: 40 },
+                        { name: '탁구대', quantity: 1 },
+                        { name: '탁구라켓', quantity: 10 },
+                        { name: '탁구공', quantity: 2 },
+                        { name: '+자 부메랑', quantity: 6 },
+                        { name: '플라잉디스크', quantity: 14 },
+                        { name: '닷지비', quantity: 1 },
+                        { name: '주장완장', quantity: 4 },
+                        { name: '축구유니폼', quantity: 18 },
+                        { name: '축구 글러브 8호', quantity: 2 },
+                        { name: '축구 글러브 11호', quantity: 2 },
+                        { name: '축구 정강이보호대', quantity: 20 },
+                        { name: '축구복', quantity: 30 },
+                        { name: '농구복', quantity: 18 },
+                        { name: '티볼복', quantity: 12 },
+                        { name: '티볼 글러브(좌)', quantity: 3 },
+                        { name: '티볼 글러브(우)', quantity: 22 },
+                        { name: '핸볼 공', quantity: 15 },
+                        { name: '핸볼 유니폼', quantity: 14 },
+                        { name: '핸볼 골대', quantity: 2 },
+                        { name: '미니골대', quantity: 2 },
+                        { name: '후프', quantity: 15 },
+                        { name: '체조곤봉', quantity: 20 },
+                        { name: '체조리본', quantity: 10 },
+                        { name: '점프밴드', quantity: 15 },
+                        { name: '원반(폼)', quantity: 25 },
+                        { name: '한삼', quantity: 50 }
+                    ],
+                    timetable: {
+                        '월-1': '5-4/4-4', '월-2': '5-3/4-3', '월-3': '5-2/4-2', '월-4': '4-1/5-1(1학기)', '월-6': '축구(저)', '월-7': '축구(고)',
+                        '화-1': '3-1/6-1', '화-2': '3-2/6-2', '화-3': '3-3/6-3', '화-4': '3-4/5-1(2학기)', '화-6': '축구(고)',
+                        '수-1': '5-3/6-3/3-1', '수-2': '5-2/6-1/3-2', '수-3': '5-1', '수-4': '5-4/6-2',
+                        '목-1': '3-1/4-1', '목-2': '3-2/4-2', '목-3': '3-3/4-3', '목-4': '3-4/4-4', '목-6': '음악줄넘기(저)', '목-7': '음악줄넘기(고)',
+                        '금-1': '5-2/6-3', '금-2': '5-1', '금-3': '5-4/6-2', '금-4': '5-3/6-1'
+                    }
+                },
+                '소체육실': { 
+                    items: [{ name: '스텝박스', quantity: 1 }], 
+                    timetable: {
+                        '월-1': '1-5', '월-2': '1-4', '월-3': '1-1', '월-4': '1-2', '월-5': '1-3',
+                        '화-1': '6-2', '화-2': '2-1', '화-3': '2-2', '화-4': '2-3', '화-5': '2-4',
+                        '수-1': '3-3', '수-2': '3-4', '수-3': '3-1', '수-4': '3-2', '수-5': '6-1',
+                        '목-1': '6-3', '목-2': '5-1', '목-3': '5-2', '목-4': '5-3', '목-5': '5-4', '목-6': '방송댄스(저)', '목-7': '방송댄스(고)',
+                        '금-2': '4-4', '금-3': '4-3', '금-4': '4-2', '금-5': '4-1'
+                    }
+                },
+                '구령대밑': {
+                    items: [
+                        { name: '티볼 루(고무)', quantity: 5 },
+                        { name: '티볼 루(원단)', quantity: 3 },
+                        { name: '티볼 배트', quantity: 3 },
+                        { name: '티볼 배팅티', quantity: 4 },
+                        { name: '발목줄넘기', quantity: 30 },
+                        { name: '원반(폼)', quantity: 25 },
+                        { name: '줄다리기 줄', quantity: 2 },
+                        { name: '뒤집기 판', quantity: 14 },
+                        { name: '대형 주사위', quantity: 1 },
+                        { name: '소형 주사위', quantity: 1 },
+                        { name: '팀조끼(흰색,XS)', quantity: 10 },
+                        { name: '팀조끼(흰색,M)', quantity: 8 },
+                        { name: '팀조끼(파랑,M)', quantity: 14 },
+                        { name: '팀조끼(빨강,M)', quantity: 12 },
+                        { name: '팀조끼(연두,M)', quantity: 12 },
+                        { name: '팀조끼(노랑,M)', quantity: 6 },
+                        { name: '가위바위보막대', quantity: 7 },
+                        { name: '초등용 창', quantity: 2 },
+                        { name: '바퀴자', quantity: 1 },
+                        { name: '골대망', quantity: 2 },
+                        { name: '라인기', quantity: 3 },
+                        { name: '마그네샤', quantity: 4 },
+                        { name: '응원 수술', quantity: 30 },
+                        { name: '굴렁쇠', quantity: 15 },
+                        { name: '나무팽이', quantity: 10 },
+                        { name: '제기', quantity: 1 },
+                        { name: '노란색 깃발', quantity: 20 },
+                        { name: '파란색 깃발', quantity: 20 },
+                        { name: '한삼', quantity: 20 },
+                        { name: '줄넘기(면)', quantity: 5 }
+                    ]
+                },
+                '6학년연구실-도전': {
+                    items: [
+                        { name: '스택스 타이머', quantity: 2 },
+                        { name: '스택스 가방(소)', quantity: 2 },
+                        { name: '스택스 홀더', quantity: 5 },
+                        { name: '스택스 컵', quantity: 30 },
+                        { name: '스택스 가방(대)', quantity: 3 },
+                        { name: '스피드스태킹 지도서', quantity: 2 },
+                        { name: '스택스 매트', quantity: 2 }
+                    ]
+                },
+                '컴퓨터실': { 
+                    items: [], 
+                    timetable: {
+                        '월-1': '3학년', '월-2': '3학년', '월-3': '3학년', '월-4': '3학년', '월-6': '코딩(저)', '월-7': '코딩(고)',
+                        '화-1': '5학년', '화-2': '5학년', '화-3': '5학년', '화-4': '5학년', '화-6': '컴퓨터(저)', '화-7': '컴퓨터(고)',
+                        '수-1': '1/2학년', '수-2': '1/2학년', '수-3': '1/2학년', '수-4': '1/2학년',
+                        '목-1': '6학년', '목-2': '6학년', '목-3': '6학년', '목-4': '6학년',
+                        '금-1': '4학년', '금-2': '4학년', '금-3': '4학년', '금-4': '4학년'
+                    }
+                },
+                '도서실': { 
+                    items: [], 
+                    timetable: {
+                        '월-1': '1-1', '월-2': '1-2', '월-3': '1-3', '월-4': '1-4', '월-5': '1-5',
+                        '화-1': '2-1', '화-2': '2-2', '화-3': '2-3', '화-4': '2-4',
+                        '수-1': '3-1', '수-2': '3-2', '수-3': '3-3', '수-4': '3-4',
+                        '목-1': '4-2', '목-2': '4-1', '목-3': '4-4', '목-4': '4-3',
+                        '금-1': '5-1', '금-2': '5-2', '금-3': '5-3', '금-4': '5-4', '금-5': '6-1/6-2/6-3'
+                    }
+                },
+                '물품보관실': { items: [] },
+                '늘봄교실2': { 
+                    items: [],
+                    timetable: {
+                        '월-6': '2반-예술놀터', '월-7': '2반-동화구연',
+                        '화-6': '2반-동화구연', '화-7': '2반-에듀스포츠',
+                        '수-6': '2반-음악놀이', '수-7': '2반-컴퓨터',
+                        '목-6': '1반-공예아트', '목-7': '', 
+                        '금-6': '2반-종이꿀잼', '금-7': '2반-협동게임'
+                    }
+                },
+                '늘봄교실1': { 
+                    items: [],
+                    timetable: {
+                        '월-6': '1반-예술놀터', '월-7': '1반-동화구연',
+                        '화-6': '3반-에듀스포츠', '화-7': '3반-예술놀터',
+                        '수-6': '3반-언어쑥쑥', '수-7': '3반-음악놀이',
+                        '목-6': '1반-인성독서', '목-7': '1반-컴퓨터',
+                        '금-6': '3반-식생활로자라나요', '금-7': '3반-창의보드'
+                    }
+                },
+                '두드림실': { items: [] },
+                'VR체험실': {
+                    items: [],
+                    timetable: {
+                        '월-5': '1반-놀이체육', '월-6': '1반-놀이체육',
+                        '화-5': '2반-놀이체육', '화-6': '2반-놀이체육', '화-7': '1반-노블레슨',
+                        '수-5': '놀이체육', '수-6': '놀이체육',
+                        '금-5': '에듀스포츠', '금-6': '에듀스포츠'
+                    }
+                },
+                '방과후교실1': {
+                    items: [],
+                    timetable: {
+                        '월-6': '로봇과학(저)', '월-7': '로봇과학(고)',
+                        '수-5': '한국사(저)', '수-6': '한국사(고)',
+                        '목-6': '창의과학(저)', '목-7': '창의과학(고)',
+                        '금-6': '클레이(저)', '금-7': '클레이(고)'
+                    }
+                },
+                '방과후교실2': {
+                    items: [],
+                    timetable: {
+                        '수-5': '바이올린(저)', '수-6': '바이올린(고)',
+                        '금-6': '바둑(저)', '금-7': '바둑(고)'
+                    }
+                },
+                '과학실1': { 
+                    items: [], 
+                    timetable: {
+                        '월-1': '3-1', '월-2': '3-1', '월-3': '3-2', '월-4': '3-2',
+                        '화-1': '6-3', '화-2': '6-3', '화-3': '6-2', '화-4': '6-2',
+                        '목-1': '6-1', '목-2': '6-1', '목-3': '6-2', '목-4': '6-2',
+                        '금-1': '3-3', '금-2': '3-3', '금-3': '3-4', '금-4': '3-4'
+                    }
+                },
+                '과학실2': { 
+                    items: [], 
+                    timetable: {
+                        '화-1': '5-1', '화-2': '5-1', '화-3': '5-2', '화-4': '5-2',
+                        '수-1': '4-3', '수-2': '4-3', '수-3': '4-4', '수-4': '4-4',
+                        '목-1': '5-3', '목-2': '5-3', '목-3': '5-4', '목-4': '5-4',
+                        '금-1': '4-1', '금-2': '4-1', '금-3': '4-2', '금-4': '4-2'
+                    }
+                }
+            };
+        }
+
+        // 초기 데이터 로드
+        function loadData() {
+            const saved = localStorage.getItem('roomData');
+            if (saved) {
+                roomData = JSON.parse(saved);
+            } else {
+                roomData = getDefaultData();
+            }
+        }
+
+        // 데이터 저장
+        function saveData() {
+            localStorage.setItem('roomData', JSON.stringify(roomData));
+        }
+
+        // 데이터 초기화
+        function resetData() {
+            if (confirm('모든 데이터를 PDF 최신 내용으로 초기화하시겠습니까?\n(기존에 추가/수정한 내용은 사라집니다)')) {
+                localStorage.removeItem('roomData');
+                location.reload();
+            }
+        }
+
+        // 교실 열기
+        function openRoom(roomName, hasTimetable) {
+            currentRoom = roomName;
+            document.getElementById('modalTitle').textContent = roomName;
+            
+            const timetableTabBtn = document.getElementById('timetableTabBtn');
+            if (hasTimetable) {
+                timetableTabBtn.style.display = 'block';
+            } else {
+                timetableTabBtn.style.display = 'none';
+            }
+
+            if (!roomData[roomName]) {
+                roomData[roomName] = {
+                    items: [],
+                    timetable: hasTimetable ? {} : undefined
+                };
+            }
+
+            displayItems();
+            
+            if (hasTimetable) {
+                generateTimetable();
+            }
+
+            document.getElementById('modal').style.display = 'block';
+            switchTab('items');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // 탭 전환
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'items') {
+                tabs[0].classList.add('active');
+                document.getElementById('itemsTab').classList.add('active');
+            } else if (tabName === 'timetable') {
+                tabs[1].classList.add('active');
+                document.getElementById('timetableTab').classList.add('active');
+            }
+        }
+
+        // 물품 목록 표시
+        function displayItems() {
+            const itemsList = document.getElementById('itemsList');
+            const items = roomData[currentRoom]?.items || [];
+            
+            if (items.length === 0) {
+                itemsList.innerHTML = '<div class="empty-message">등록된 물품이 없습니다.</div>';
+                return;
+            }
+
+            let html = '';
+            items.forEach((item, index) => {
+                html += '<div class="item-card">';
+                html += '<div class="item-name">' + item.name + '</div>';
+                html += '<div class="item-quantity">수량: ' + item.quantity + '</div>';
+                html += '<div class="item-actions">';
+                html += '<button class="btn btn-primary btn-sm" onclick="editItem(' + index + ')">수정</button>';
+                html += '<button class="btn btn-danger btn-sm" onclick="deleteItem(' + index + ')">삭제</button>';
+                html += '</div></div>';
+            });
+            itemsList.innerHTML = html;
+        }
+
+        // 물품 추가
+        function addItem() {
+            const nameInput = document.getElementById('itemName');
+            const quantityInput = document.getElementById('itemQuantity');
+            
+            const name = nameInput.value.trim();
+            const quantity = parseInt(quantityInput.value);
+
+            if (!name || isNaN(quantity) || quantity < 0) {
+                alert('물품명과 수량을 올바르게 입력해주세요.');
+                return;
+            }
+
+            if (!roomData[currentRoom].items) {
+                roomData[currentRoom].items = [];
+            }
+
+            roomData[currentRoom].items.push({ name: name, quantity: quantity });
+            saveData();
+            displayItems();
+
+            nameInput.value = '';
+            quantityInput.value = '';
+        }
+
+        // 물품 수정
+        function editItem(index) {
+            const item = roomData[currentRoom].items[index];
+            const newName = prompt('물품명:', item.name);
+            if (newName === null) return;
+
+            const newQuantity = prompt('수량:', item.quantity);
+            if (newQuantity === null) return;
+
+            const quantity = parseInt(newQuantity);
+            if (isNaN(quantity) || quantity < 0) {
+                alert('올바른 수량을 입력해주세요.');
+                return;
+            }
+
+            roomData[currentRoom].items[index] = { name: newName.trim(), quantity: quantity };
+            saveData();
+            displayItems();
+        }
+
+        // 물품 삭제
+        function deleteItem(index) {
+            if (confirm('정말 삭제하시겠습니까?')) {
+                roomData[currentRoom].items.splice(index, 1);
+                saveData();
+                displayItems();
+            }
+        }
+
+        // 시간표 생성
+        function generateTimetable() {
+            const tbody = document.getElementById('timetableBody');
+            const days = ['월', '화', '수', '목', '금'];
+            const periods = 8;
+            const timeSlots = [
+                '1교시',
+                '2교시',
+                '3교시',
+                '4교시',
+                '5교시',
+                '14:00-14:50',
+                '15:05-16:05',
+                '16:10-17:10'
+            ];
+
+            let html = '';
+            for (let i = 1; i <= periods; i++) {
+                html += '<tr><td>' + timeSlots[i-1] + '</td>';
+                for (let j = 0; j < days.length; j++) {
+                    const key = days[j] + '-' + i;
+                    const value = roomData[currentRoom].timetable?.[key] || '';
+                    html += '<td><input type="text" id="tt-' + key + '" value="' + value + '"></td>';
+                }
+                html += '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        // 시간표 저장
+        function saveTimetable() {
+            const days = ['월', '화', '수', '목', '금'];
+            const periods = 8;
+
+            if (!roomData[currentRoom].timetable) {
+                roomData[currentRoom].timetable = {};
+            }
+
+            for (let i = 1; i <= periods; i++) {
+                for (let j = 0; j < days.length; j++) {
+                    const key = days[j] + '-' + i;
+                    const input = document.getElementById('tt-' + key);
+                    if (input) {
+                        roomData[currentRoom].timetable[key] = input.value;
+                    }
+                }
+            }
+
+            saveData();
+            alert('시간표가 저장되었습니다!');
+        }
+
+        // 붙여넣기 영역 지우기
+        function clearPasteArea() {
+            document.getElementById('pasteArea').value = '';
+        }
+
+        // 엑셀에서 붙여넣은 데이터 파싱
+        function parsePastedData() {
+            const pasteArea = document.getElementById('pasteArea');
+            const text = pasteArea.value.trim();
+            
+            if (!text) {
+                alert('붙여넣을 내용이 없습니다.');
+                return;
+            }
+
+            const days = ['월', '화', '수', '목', '금'];
+            const lines = text.split('\n');
+            
+            if (lines.length === 0) {
+                alert('올바른 형식이 아닙니다.');
+                return;
+            }
+
+            // 각 줄을 파싱 (탭 또는 여러 공백으로 구분)
+            for (let i = 0; i < Math.min(lines.length, 8); i++) {
+                const period = i + 1;
+                // 탭(\t) 또는 2개 이상의 공백으로 분리
+                const cells = lines[i].split(/\t|  +/).map(cell => cell.trim());
+                
+                for (let j = 0; j < Math.min(cells.length, 5); j++) {
+                    const key = days[j] + '-' + period;
+                    const input = document.getElementById('tt-' + key);
+                    if (input) {
+                        // "-"나 빈 값은 빈 문자열로
+                        input.value = (cells[j] === '-' || cells[j] === '') ? '' : cells[j];
+                    }
+                }
+            }
+
+            alert('시간표가 입력 필드에 반영되었습니다.\n확인 후 "시간표 저장" 버튼을 눌러주세요.');
+        }
+
+        // 물품 검색
+        function searchItems() {
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            const calendarView = document.getElementById('calendarView');
+            const roomsContainer = document.getElementById('roomsContainer');
+            const query = searchInput.value.trim().toLowerCase();
+
+            // 자료입력 영역만 숨기기 (달력은 계속 보이게)
+            if (roomsContainer) {
+                roomsContainer.style.display = 'none';
+            }
+            // 달력은 계속 표시
+            if (calendarView) {
+                calendarView.style.display = 'block';
+            }
+
+            if (!query) {
+                searchResults.innerHTML = '<div class="no-results">검색어를 입력해주세요.</div>';
+                searchResults.style.display = 'block';
+                searchResults.classList.add('show');
+                return;
+            }
+
+            let results = [];
+            
+            // 모든 교실의 물품 검색
+            for (let roomName in roomData) {
+                const room = roomData[roomName];
+                if (room.items && room.items.length > 0) {
+                    room.items.forEach(item => {
+                        if (item.name.toLowerCase().includes(query)) {
+                            results.push({
+                                room: roomName,
+                                item: item
+                            });
+                        }
+                    });
+                }
+            }
+
+            // 결과 표시
+            if (results.length === 0) {
+                searchResults.innerHTML = '<div class="no-results">검색 결과가 없습니다.</div>';
+            } else {
+                let html = '<h3 style="color: #667eea; margin-bottom: 15px;">검색 결과: ' + results.length + '개</h3>';
+                results.forEach(result => {
+                    html += '<div class="search-result-item">';
+                    html += '<div class="room-name">📍 ' + result.room + '</div>';
+                    html += '<div class="item-info">• ' + result.item.name + ' (수량: ' + result.item.quantity + '개)</div>';
+                    html += '</div>';
+                });
+                searchResults.innerHTML = html;
+            }
+
+            searchResults.style.display = 'block';
+            searchResults.classList.add('show');
+        }
+
+        // 달력 관련 변수
+        let currentYear = 2025;
+        let currentMonth = 9; // 0-based (9 = October)
+        let selectedDate = null;
+
+        // 달력 토글
+        // 자료입력 토글
+        function toggleDataEntry() {
+            const roomsContainer = document.getElementById('roomsContainer');
+            const calendarView = document.getElementById('calendarView');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (roomsContainer.style.display === 'none') {
+                roomsContainer.style.display = 'block';
+                calendarView.style.display = 'none';
+                searchResults.style.display = 'none';
+            } else {
+                roomsContainer.style.display = 'none';
+                calendarView.style.display = 'block';
+            }
+        }
+
+        // 달력 토글 (이제 필요없지만 호환성 유지)
+        function toggleCalendar() {
+            const calendarView = document.getElementById('calendarView');
+            const roomsContainer = document.getElementById('roomsContainer');
+            const searchResults = document.getElementById('searchResults');
+            
+            if (calendarView.style.display === 'none') {
+                calendarView.style.display = 'block';
+                roomsContainer.style.display = 'none';
+                searchResults.style.display = 'none';
+                const today = new Date();
+                currentYear = today.getFullYear();
+                currentMonth = today.getMonth();
+                renderCalendar();
+            } else {
+                calendarView.style.display = 'none';
+            }
+        }
+
+        // 달력 렌더링
+        function renderCalendar() {
+            const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+            document.getElementById('calendarMonth').textContent = currentYear + '년 ' + monthNames[currentMonth];
+
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const prevLastDay = new Date(currentYear, currentMonth, 0);
+            
+            const firstDayWeek = firstDay.getDay();
+            const lastDate = lastDay.getDate();
+            const prevLastDate = prevLastDay.getDate();
+
+            let html = '';
+            
+            // 이전 달 날짜
+            for (let i = firstDayWeek - 1; i >= 0; i--) {
+                html += '<div class="calendar-day other-month">' + (prevLastDate - i) + '</div>';
+            }
+            
+            // 이번 달 날짜
+            const today = new Date();
+            for (let i = 1; i <= lastDate; i++) {
+                const date = new Date(currentYear, currentMonth, i);
+                const dateStr = formatDate(date);
+                let classes = 'calendar-day';
+                
+                if (today.getFullYear() === currentYear && 
+                    today.getMonth() === currentMonth && 
+                    today.getDate() === i) {
+                    classes += ' today';
+                }
+                
+                if (selectedDate === dateStr) {
+                    classes += ' selected';
+                }
+                
+                html += '<div class="' + classes + '" onclick="selectDate(\'' + dateStr + '\')">' + i + '</div>';
+            }
+            
+            // 다음 달 날짜
+            const remaining = 42 - (firstDayWeek + lastDate);
+            for (let i = 1; i <= remaining; i++) {
+                html += '<div class="calendar-day other-month">' + i + '</div>';
+            }
+            
+            document.getElementById('calendarDays').innerHTML = html;
+        }
+
+        // 날짜 포맷
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+
+        // 월 변경
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        }
+
+        // 오늘로 이동
+        function goToday() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            renderCalendar();
+        }
+
+        // 날짜 선택
+        function selectDate(dateStr) {
+            selectedDate = dateStr;
+            renderCalendar();
+            showDailySchedule(dateStr);
+        }
+
+        // 해당 날짜의 요일 가져오기
+        function getDayOfWeek(dateStr) {
+            const date = new Date(dateStr);
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            return days[date.getDay()];
+        }
+
+        // 주차 시작일 찾기
+        function getWeekStart(dateStr) {
+            const date = new Date(dateStr);
+            const day = date.getDay();
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1); // 월요일로 조정
+            const monday = new Date(date.setDate(diff));
+            return formatDate(monday);
+        }
+
+        // 일일 시간표 표시 (표 형태)
+        function showDailySchedule(dateStr) {
+            const date = new Date(dateStr);
+            const dayOfWeek = getDayOfWeek(dateStr);
+            
+            // 주말 체크
+            if (dayOfWeek === '일' || dayOfWeek === '토') {
+                document.getElementById('dailySchedule').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('scheduleDate').textContent = 
+                dateStr + ' (' + dayOfWeek + '요일) 특별실 사용 현황';
+            
+            const periods = [
+                { name: '1교시', time: '08:50-09:30', key: '1' },
+                { name: '2교시', time: '09:40-10:20', key: '2' },
+                { name: '3교시', time: '10:30-11:10', key: '3' },
+                { name: '4교시', time: '11:20-12:00', key: '4' },
+                { name: '5교시', time: '12:50-13:30', key: '5' },
+                { name: '14:00-14:50', time: '14:00-14:50', key: '6' },
+                { name: '15:05-16:05', time: '15:05-16:05', key: '7' },
+                { name: '16:10-17:10', time: '16:10-17:10', key: '8' }
+            ];
+
+            // 특별실 목록 수집
+            // 주요 특별실: 항상 표시 (수업 없어도 빈칸으로 표시)
+            const mainRoomNames = ['AI실', '음악실', '미술실', 'VR체험실', '체육관', '방과후교실1', '방과후교실2'];
+            // 기타 특별실: 토글 버튼으로 표시
+            const otherRoomNames = ['3,5학년 영어실', '4,6학년 영어실', '과학실1', '과학실2', '도서실'];
+            
+            let mainRooms = [];  // 주요 특별실 (무조건 포함)
+            let additionalRooms = [];  // 기타 특별실
+            
+            // 주요 특별실은 데이터가 있으면 무조건 추가
+            mainRoomNames.forEach(roomName => {
+                if (roomData[roomName]) {
+                    mainRooms.push(roomName);
+                }
+            });
+            
+            // 기타 특별실은 시간표 데이터가 있으면 추가
+            otherRoomNames.forEach(roomName => {
+                if (roomData[roomName]) {
+                    const room = roomData[roomName];
+                    if (room.timetable && Object.keys(room.timetable).length > 0) {
+                        additionalRooms.push(roomName);
+                    }
+                }
+            });
+            
+            let specialRooms = mainRooms;
+
+            if (specialRooms.length === 0) {
+                document.getElementById('scheduleContent').innerHTML = 
+                    '<div style="color: #999; padding: 20px; text-align: center;">이 날짜에 사용 중인 특별실이 없습니다.</div>';
+                document.getElementById('dailySchedule').style.display = 'block';
+                return;
+            }
+
+            // 표 생성
+            let html = '<div class="table-container"><table class="full-schedule-table">';
+            
+            // 헤더 행
+            html += '<thead><tr>';
+            html += '<th class="time-header">교시/시간</th>';
+            specialRooms.forEach(room => {
+                html += '<th>' + room + '</th>';
+            });
+            html += '</tr></thead>';
+            
+            // 본문 행
+            html += '<tbody>';
+            periods.forEach(period => {
+                html += '<tr>';
+                
+                // 시간 셀
+                html += '<td class="time-cell">' + period.name + '</td>';
+                
+                // 각 특별실 셀
+                specialRooms.forEach(roomName => {
+                    const room = roomData[roomName];
+                    let classInfo = '';
+                    
+                    // 일반 시간표 체크
+                    if (room.timetable) {
+                        const key = dayOfWeek + '-' + period.key;
+                        classInfo = room.timetable[key] || '';
+                    }
+                    
+                    // AI실 주차별 시간표 체크
+                    if (roomName === 'AI실' && room.weeklySchedule) {
+                        const weekStart = getWeekStart(dateStr);
+                        const weekSchedule = room.weeklySchedule[weekStart];
+                        
+                        if (weekSchedule && weekSchedule[dayOfWeek]) {
+                            const classes = weekSchedule[dayOfWeek];
+                            const periodIndex = parseInt(period.key) - 1;
+                            
+                            if (periodIndex < classes.length && classes[periodIndex]) {
+                                classInfo = classes[periodIndex];
+                            }
+                        }
+                    }
+                    
+                    // 셀 내용 출력
+                    if (classInfo && classInfo.trim() !== '') {
+                        html += '<td><span class="class-info">' + classInfo + '</span></td>';
+                    } else {
+                        html += '<td><span class="empty-cell">-</span></td>';
+                    }
+                });
+                
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            html += '</table></div>';
+            
+            // 기타 특별실 토글 버튼 추가 (있는 경우에만)
+            if (additionalRooms.length > 0) {
+                html += '<div style="text-align: center; margin-top: 20px;">';
+                html += '<button onclick="toggleAdditionalRooms(\'' + dateStr + '\', \'' + dayOfWeek + '\')" ';
+                html += 'style="padding: 10px 20px; background: #764ba2; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">';
+                html += '📚 영어실/과학실/도서실 보기 (' + additionalRooms.length + '개)';
+                html += '</button></div>';
+                
+                // 기타 특별실 표 (초기 숨김)
+                html += '<div id="additionalRoomsTable" style="display: none; margin-top: 20px;">';
+                html += '<h4 style="color: #764ba2; margin-bottom: 10px;">📚 영어실 / 과학실 / 도서실</h4>';
+                html += '<div class="table-container"><table class="full-schedule-table">';
+                
+                // 헤더
+                html += '<thead><tr>';
+                html += '<th class="time-header">교시/시간</th>';
+                additionalRooms.forEach(room => {
+                    html += '<th>' + room + '</th>';
+                });
+                html += '</tr></thead>';
+                
+                // 본문
+                html += '<tbody>';
+                periods.forEach(period => {
+                    html += '<tr>';
+                    html += '<td class="time-cell">' + period.name + '</td>';
+                    
+                    additionalRooms.forEach(roomName => {
+                        const room = roomData[roomName];
+                        let classInfo = '';
+                        
+                        if (room.timetable) {
+                            const key = dayOfWeek + '-' + period.key;
+                            classInfo = room.timetable[key] || '';
+                        }
+                        
+                        if (classInfo && classInfo.trim() !== '') {
+                            html += '<td><span class="class-info">' + classInfo + '</span></td>';
+                        } else {
+                            html += '<td><span class="empty-cell">-</span></td>';
+                        }
+                    });
+                    
+                    html += '</tr>';
+                });
+                html += '</tbody>';
+                html += '</table></div></div>';
+            }
+            
+            document.getElementById('scheduleContent').innerHTML = html;
+            document.getElementById('dailySchedule').style.display = 'block';
+        }
+
+        // 기타 특별실 토글
+        function toggleAdditionalRooms(dateStr, dayOfWeek) {
+            const table = document.getElementById('additionalRoomsTable');
+            if (table.style.display === 'none') {
+                table.style.display = 'block';
+            } else {
+                table.style.display = 'none';
+            }
+        }
+
+        // 페이지 로드 시
+        loadData();
+        
+        // 달력 초기 렌더링
+        const today = new Date();
+        currentYear = today.getFullYear();
+        currentMonth = today.getMonth();
+        renderCalendar();
+
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>
